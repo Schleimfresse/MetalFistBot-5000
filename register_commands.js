@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import config from "./config/config.js";
 import { REST, Routes } from "discord.js";
 
 const commands = [
@@ -8,7 +7,7 @@ const commands = [
 		description: "Measures the latency of the bot",
 	},
 	{
-		name: "info",
+		name: "botinfo",
 		description: "Information about the bot",
 	},{
 		name: "serverinfo",
@@ -144,7 +143,17 @@ const commands = [
 				],
 			},
 			{
-				name: "link",
+				name: "playlist",
+				description: "Specify wether the url is for a playlist or not",
+				type: 3,
+				required: true,
+				choices: [
+					{ name: "True", value: "True" },
+					{ name: "False", value: "False" },
+				],
+			},
+			{
+				name: "url",
 				description: "The music link to add.",
 				type: 3,
 				required: true,
@@ -159,7 +168,7 @@ const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
 	try {
 		console.log("Started refreshing application (/) commands.");
 
-		await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands });
+		await rest.put(Routes.applicationCommands(config.CLIENT_ID), { body: commands });
 
 		console.log("Successfully reloaded application (/) commands.");
 	} catch (error) {
