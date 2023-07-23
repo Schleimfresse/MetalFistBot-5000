@@ -11,10 +11,11 @@ function help(interaction) {
 		.setThumbnail(botAvatar)
 		.addFields({
 			name: "🎶 Music",
-			value: "`/add`, `/shuffle`, `/leave`, `/stop`, `/pause`, `/unpause`, `/resume`",
+			value: "`/play`, `/shuffle`, `/leave`, `/stop`, `/pause`, `/unpause`, `/resume`, `/nowplaying`, `/skip`, `/queue`, `/seek`, `/jumb`, `/lyrics`, `/filter`",
 		})
-		.addFields({ name: "💫 Various", value: "`/serverinfo`, `/userinfo`" })
+		.addFields({ name: "💫 Various", value: "`/serverinfo`, `/userinfo`, `/clear`" })
 		.addFields({ name: "ℹ️ Info", value: "`/help`, `/ping`, `/botinfo`" })
+		.addFields({ name: "🕹 Games", value: "`/masterypoints`, `/totalmasterypoints`" })
 		.setTimestamp(interaction.createdAt)
 		.setFooter({ text: `Requested by ${interaction.user.username}` });
 	interaction.reply({ embeds: [Embed] });
@@ -27,7 +28,7 @@ async function ping(interaction) {
 	await interaction.editReply(`Pong! Latency: \`${ping}ms\``);
 }
 
-function botinfo(interaction, client) {
+function botinfo(interaction) {
 	const guild = interaction.guild;
 	if (!guild.available) {
 		interaction.reply("Unable to retrieve server information.");
@@ -50,7 +51,7 @@ function botinfo(interaction, client) {
 		.setThumbnail(botAvatar)
 		.addFields(
 			{ name: "Name", value: "MetalFistBot 5000", inline: true },
-			{ name: "Version", value: "1.2.0", inline: true },
+			{ name: "Version", value: "1.3.0", inline: true },
 			{
 				name: "Developer",
 				value: "schleimfresse \n [GitHub](https://github.com/Schleimfresse/MetalFistBot-5000)",

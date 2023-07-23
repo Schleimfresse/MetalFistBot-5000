@@ -9,7 +9,8 @@ const commands = [
 	{
 		name: "botinfo",
 		description: "Information about the bot",
-	},{
+	},
+	{
 		name: "serverinfo",
 		description: "Information about the server",
 	},
@@ -112,24 +113,77 @@ const commands = [
 		],
 	},
 	{
-		name: "stop",
-		description: "Stop the currently playing music",
-	},
-	{
 		name: "pause",
 		description: "Pause the currently playing music",
 	},
 	{
 		name: "unpause",
-		description: "Unpause the music, equal to the `resume` command",
+		description: "Unpause the music",
 	},
 	{
 		name: "resume",
 		description: "Resume the music, equal to the `unpause` command",
 	},
+	/*{
+		name: "seek",
+		description: "Go to a specific time in the track.",
+		options: [
+			{
+				name: "seconds",
+				description:
+					"Where to go in the track. For example, if 10 seconds is entered, the track moves to the 10th second.",
+				type: 3,
+				required: true,
+			},
+		],
+	},*/
 	{
-		name: "add",
-		description: "Add a music link to the queue.",
+		name: "skip",
+		description: "Skip the current track",
+	},
+	{
+		name: "shuffle",
+		description: "Shuffle the current queue",
+	},
+	{
+		name: "nowplaying",
+		description: "Show information about the current playing track",
+	},
+	{
+		name: "lyrics",
+		description: "Retrieves the lyrics of the currently playing song.",
+	},
+	{
+		name: "filter",
+		description: "Select a filter for the playing music.",
+	},
+	{
+		name: "jumb",
+		description: "Jump to a specific position in the queue",
+		options: [
+			{
+				name: "to",
+				description: "The index of the track to jump to.",
+				type: 4,
+				required: true,
+			},
+		],
+	},
+	{
+		name: "queue",
+		description: "Show the current queue of the tracks",
+		options: [
+			{
+				name: "page",
+				description: "The platform the link is from.",
+				type: 4,
+				required: false,
+			},
+		],
+	},
+	{
+		name: "play",
+		description: "Add a song to the queue. A few different pages are supported.",
 		options: [
 			{
 				name: "platform",
@@ -143,20 +197,16 @@ const commands = [
 				],
 			},
 			{
-				name: "playlist",
-				description: "Specify wether the url is for a playlist or not",
-				type: 3,
-				required: true,
-				choices: [
-					{ name: "True", value: "True" },
-					{ name: "False", value: "False" },
-				],
-			},
-			{
 				name: "url",
 				description: "The music link to add.",
 				type: 3,
 				required: true,
+			},
+			{
+				name: "playlist",
+				description: "Specify wether the url is for a playlist or not",
+				type: 5,
+				required: false,
 			},
 		],
 	},

@@ -17,6 +17,7 @@ let config = {
 			IntentsBitField.Flags.GuildPresences,
 		],
 	}),
+	LYRICS_KEY: process.env.LYRICS_KEY
 };
 
 export default config;

@@ -1,7 +1,6 @@
 import Discord from "discord.js";
 const { ActivityType } = Discord;
 import commands from "./commands/index.js";
-import "@discord-player/extractor";
 import config from "./config/config.js";
 const client = config.CLIENT;
 
@@ -11,6 +10,10 @@ client.on("ready", () => {
 		activities: [{ name: "on minions and grabbing ADCs", type: ActivityType.Watching }],
 		status: "idle",
 	});
+});
+
+client.on('voiceStateUpdate', (oldState, newState) => {
+	handleInactivity(newState)
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -25,36 +28,54 @@ client.on("interactionCreate", async (interaction) => {
 	}
 
 	if (commandName === "shuffle") {
+		commands.music.shuffle(interaction);
 	}
 
+	if (commandName === "jumb") {
+		commands.music.jumb(interaction);
+	}
+
+	if (commandName === "lyrics") {
+		commands.music.lyrics(interaction);
+	}
+
+	if (commandName === "filter") {
+		commands.music.filter(interaction);
+	}
+
+	if (commandName === "skip") {
+		commands.music.skip(interaction);
+	}
 	if (commandName === "queue") {
+		commands.music.queue(interaction);
 	}
 
 	if (commandName === "nowplaying") {
+		commands.music.nowplaying(interaction);
 	}
+
+	/*if (commandName === "seek") {
+		commands.music.seek(interaction)
+	}*/
 
 	if (commandName === "botinfo") {
 		commands.info.botinfo(interaction);
 	}
 
 	if (commandName === "serverinfo") {
-		commands.misc.serverinfo(interaction)
+		commands.misc.serverinfo(interaction);
 	}
 
 	if (commandName === "clear") {
-		commands.misc.clear(interaction)
+		commands.misc.clear(interaction);
 	}
 
-	if (commandName === "add") {
+	if (commandName === "play") {
 		commands.music.add(interaction, client);
 	}
 
 	if (commandName === "leave") {
 		commands.music.leave(interaction);
-	}
-
-	if (commandName === "stop") {
-		commands.music.stop(interaction);
 	}
 
 	if (commandName === "pause") {
@@ -66,11 +87,11 @@ client.on("interactionCreate", async (interaction) => {
 	}
 
 	if (commandName === "masterypoints") {
-		commands.lol.getMasteryPoints(interaction)
+		commands.lol.getMasteryPoints(interaction);
 	}
 
 	if (commandName === "totalmasterypoints") {
-		commands.lol.getTotalMasteryPoints(interaction)
+		commands.lol.getTotalMasteryPoints(interaction);
 	}
 });
 
