@@ -12,19 +12,48 @@ client.on("ready", () => {
 	});
 });
 
-client.on('voiceStateUpdate', (oldState, newState) => {
-	handleInactivity(newState)
-});
-
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isChatInputCommand()) return;
 	const { commandName } = interaction;
+
+	/*if (interaction.channel.type === 'DM' && interaction.author.bot) {
+		  try {
+			const messages = await message.channel.messages.fetch();
+			await message.channel.bulkDelete(messages);
+			message.reply(`Deleted ${amount} messages.`);
+		  } catch (error) {
+			console.error('Error while deleting messages:', error);
+			message.reply('An error occurred while deleting messages.');
+		  }
+		}
+	  }*/
+
+	if (commandName === "clear-dms") {
+		commands.misc.cleardm(interaction);
+	}
+
 	if (commandName === "ping") {
 		commands.info.ping(interaction);
 	}
 
 	if (commandName === "help") {
 		commands.info.help(interaction);
+	}
+
+	if (commandName === "remindme") {
+		commands.misc.remindme(interaction);
+	}
+
+	if (commandName === "coinflip") {
+		commands.misc.coinflip(interaction);
+	}
+
+	if (commandName === "fact") {
+		commands.misc.fact(interaction);
+	}
+
+	if (commandName === "avatar") {
+		commands.misc.avatar(interaction);
 	}
 
 	if (commandName === "shuffle") {
@@ -46,8 +75,13 @@ client.on("interactionCreate", async (interaction) => {
 	if (commandName === "skip") {
 		commands.music.skip(interaction);
 	}
+
 	if (commandName === "queue") {
 		commands.music.queue(interaction);
+	}
+
+	if (commandName === "controls") {
+		commands.music.controls(interaction);
 	}
 
 	if (commandName === "nowplaying") {
@@ -71,7 +105,11 @@ client.on("interactionCreate", async (interaction) => {
 	}
 
 	if (commandName === "play") {
-		commands.music.add(interaction, client);
+		commands.music.add(interaction, false);
+	}
+
+	if (commandName === "play-next") {
+		commands.music.add(interaction, true);
 	}
 
 	if (commandName === "leave") {
@@ -92,6 +130,10 @@ client.on("interactionCreate", async (interaction) => {
 
 	if (commandName === "totalmasterypoints") {
 		commands.lol.getTotalMasteryPoints(interaction);
+	}
+
+	if (commandName === "nsfw") {
+		commands.nsfw.nsfw(interaction);
 	}
 });
 

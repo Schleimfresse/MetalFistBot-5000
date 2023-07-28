@@ -1,4 +1,6 @@
 import { EmbedBuilder } from "discord.js";
+import config from "../config/config.js";
+const client = config.CLIENT;
 
 async function serverinfo(interaction) {
 	const guild = interaction.guild;
@@ -78,7 +80,7 @@ async function serverinfo(interaction) {
 }
 
 async function clear(interaction) {
-	const amount = interaction.options.getString("amount");
+	const amount = interaction.options.getInteger("amount");
 	if (isNaN(amount)) return interaction.reply('"Enter a valid value (number)"');
 	try {
 		const fetched = await interaction.channel.messages.fetch({ limit: amount });
@@ -92,7 +94,9 @@ async function clear(interaction) {
 			const deleteCount = messages.size;
 			const notDeletedCount = amount - deleteCount;
 			if (notDeletedCount === 0) {
-				return interaction.reply(`Deleting ${deleteCount} messages. This can take some time, Beep Beep Beep...`);
+				return interaction.reply(
+					`Deleting ${deleteCount} messages. This can take some time, Beep Beep Beep...`
+				);
 			}
 			interaction.reply(
 				`${deleteCount} messages deleted. ${notDeletedCount} messages could not be deleted as they are older than 14 days.`
@@ -103,11 +107,82 @@ async function clear(interaction) {
 			interaction.reply("Messages cannot be deleted as they are older than 14 days.");
 		}
 		if (err.code === 50035) {
-			interaction.reply("I am not powerful enough, Beep Boob, to delete more than 100 messages – use a lower amount.");
+			interaction.reply(
+				"I am not powerful enough, Beep Boob, to delete more than 100 messages – use a lower amount."
+			);
 		} else {
 			console.log(err);
 			interaction.reply("An error occurred while deleting messages.");
 		}
 	}
 }
-export default { serverinfo, clear };
+
+function cleardm(interaction) {
+
+}
+
+function remindme(interaction) {
+	const value = interaction.options.getInteger("in");
+	const valueInMS = value * 60000;
+	let plural = "s";
+	if (value === 1) {
+		plural = "";
+	}
+	const botAvatar = client.user.displayAvatarURL();
+	const Embed = new EmbedBuilder()
+		.setColor(0xffcc00)
+		.setAuthor({ name: "MetalFistBot 5000 | Remindme", iconURL: botAvatar })
+		.setTitle(`I have created a reminder for you in **${value} minute${plural}**`)
+		.setFields({
+			name: "Info",
+			value: "However, note that if you have muted the channel, you will not be notified",
+		})
+		.setTimestamp(interaction.createdTimestamp)
+		.setFooter({ text: `Requested by ${interaction.user.username}` });
+	interaction.reply({ embeds: [Embed] });
+
+	setTimeout(() => {
+		interaction.channel.send(`Hey ${interaction.user.toString()}, your timer has finished`);
+	}, valueInMS);
+}
+
+function coinflip(interaction) {
+	const result = Math.random() < 0.5 ? "Heads" : "Tails";
+	const botAvatar = client.user.displayAvatarURL();
+	const Embed = new EmbedBuilder()
+		.setColor(0xffcc00)
+		.setAuthor({ name: "MetalFistBot 5000 | Coinflip", iconURL: botAvatar })
+		.setTitle(`The result is ${result}`)
+		.setTimestamp(interaction.createdTimestamp)
+		.setFooter({ text: `Requested by ${interaction.user.username}` });
+	interaction.reply({ embeds: [Embed] });
+}
+
+async function fact(interaction) {
+	const response = await fetch("https://nekos.life/api/v2/fact");
+	const json = await response.json();
+	const botAvatar = client.user.displayAvatarURL();
+	const Embed = new EmbedBuilder()
+		.setColor(0xffcc00)
+		.setAuthor({ name: "MetalFistBot 5000 | Fact", iconURL: botAvatar })
+		.setTitle(`Do you know that...`)
+		.setDescription(json.fact)
+		.setTimestamp(interaction.createdTimestamp)
+		.setFooter({ text: `Requested by ${interaction.user.username}` });
+	interaction.reply({ embeds: [Embed] });
+}
+
+async function avatar(interaction) {
+	const user = interaction.options.getUser("user");
+	const userAvatar = user.displayAvatarURL({ dynamic: true, size: 2048 });
+	const botAvatar = client.user.displayAvatarURL();
+	const Embed = new EmbedBuilder()
+		.setColor(0xffcc00)
+		.setAuthor({ name: "MetalFistBot 5000 | Avatar", iconURL: botAvatar })
+		.setTitle(`Here is ${user.username}'s avatar`)
+		.setImage(userAvatar)
+		.setTimestamp(interaction.createdTimestamp)
+		.setFooter({ text: `Requested by ${interaction.user.username}` });
+	interaction.reply({ embeds: [Embed] });
+}
+export default { serverinfo, clear, cleardm, remindme, coinflip, fact, avatar };

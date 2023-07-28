@@ -106,8 +106,8 @@ const commands = [
 		options: [
 			{
 				name: "amount",
-				description: "The amount of messages to be deleted.",
-				type: 3,
+				description: "The amount of messages to be deleted",
+				type: 4,
 				required: true,
 			},
 		],
@@ -146,20 +146,69 @@ const commands = [
 		description: "Shuffle the current queue",
 	},
 	{
+		name: "controls",
+		description: "Provides a menu with various commands for music playback",
+	},
+	{
+		name: "remindme",
+		description: "Schedules a reminder that reminds you when the time is up",
+		options: [
+			{
+				name: "in",
+				description: "In how many minutes you should be reminded, e.g. if you enter 5, you will be reminded in 5 minutes",
+				type: 4,
+				required: true,
+			}
+		]
+	},
+	{
 		name: "nowplaying",
 		description: "Show information about the current playing track",
 	},
 	{
-		name: "lyrics",
-		description: "Retrieves the lyrics of the currently playing song.",
+		name: "fact",
+		description: "Random facts",
 	},
 	{
-		name: "filter",
-		description: "Select a filter for the playing music.",
+		name: "coinflip",
+		description: "Do a coin flip where the result can be heads or tails",
 	},
+	{
+		name: "avatar",
+		description: "Show your or someone else's avatar",
+		options: [
+			{
+				name: "user",
+				description: 'The user of who the avatar is to be shown',
+				type: 6,
+				required: true,
+			},
+		],
+	},
+	{
+		name: "lyrics",
+		description: "Retrieves the lyrics of the currently playing song",
+	},
+	/*{
+		name: "filter",
+		description: "Select a filter for the music. The filter is active until it is changed",
+		options: [
+			{
+				name: "filter",
+				description: 'The filter to be selected',
+				type: 3,
+				required: true,
+				choices: [
+					{ name: "No filter", value: "nofilter" },
+					{ name: "NightCore", value: "nightcore" },
+					{ name: "Hardtekk", value: "hardtekk" },
+				],
+			},
+		],
+	},*/
 	{
 		name: "jumb",
-		description: "Jump to a specific position in the queue",
+		description: "Jump to a specific position in the queue.",
 		options: [
 			{
 				name: "to",
@@ -183,19 +232,8 @@ const commands = [
 	},
 	{
 		name: "play",
-		description: "Add a song to the queue. A few different pages are supported.",
+		description: "Add a song to the queue. Only YouTube is supported",
 		options: [
-			{
-				name: "platform",
-				description: "The platform the link is from.",
-				type: 3,
-				required: true,
-				choices: [
-					{ name: "Spotify", value: "Spotify" },
-					{ name: "SoundCloud", value: "SoundCloud" },
-					{ name: "YouTube", value: "YouTube" },
-				],
-			},
 			{
 				name: "url",
 				description: "The music link to add.",
@@ -204,11 +242,53 @@ const commands = [
 			},
 			{
 				name: "playlist",
-				description: "Specify wether the url is for a playlist or not",
+				description: "Specify if you want to add a playlist",
 				type: 5,
 				required: false,
 			},
 		],
+	},
+	{
+		name: "play-next",
+		description: "Adds a song to the queue and plays it after the currently playing song",
+		options: [
+			{
+				name: "url",
+				description: "The link of the audio recource",
+				type: 3,
+				required: true,
+			},
+			{
+				name: "playlist",
+				description: "Specify if you want to add a playlist",
+				type: 5,
+				required: false,
+			},
+		],
+	},
+	{
+		name: "nsfw",
+		description: "Dirty pictures and nsfw content",
+		options: [
+			{
+				name: "type",
+				description: "Specify the type",
+				type: 3,
+				required: true,
+				choices: [
+					{ name: "nude", value: "lewd" },
+					{ name: "hentai", value: "hentai" },
+					{ name: "lesbian", value: "lesbian" },
+					{ name: "anal", value: "anal" },
+					{ name: "boobs", value: "boobs" },
+
+				],
+			},
+		],
+	},
+	{
+		name: "clear-dms",
+		description: "Delete the direct messages (DMs) that the bot has sent you",
 	},
 ];
 

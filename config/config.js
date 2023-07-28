@@ -15,9 +15,12 @@ let config = {
 			IntentsBitField.Flags.MessageContent,
 			IntentsBitField.Flags.GuildVoiceStates,
 			IntentsBitField.Flags.GuildPresences,
+			IntentsBitField.Flags.DirectMessages,
 		],
 	}),
-	LYRICS_KEY: process.env.LYRICS_KEY
+	LYRICS_KEY: process.env.LYRICS_KEY,
+	SP_CLIENTID: process.env.SP_CLIENT_ID,
+	SP_CLIENT_SECRET: process.env.SP_SECRET
 };
 
 export default config;

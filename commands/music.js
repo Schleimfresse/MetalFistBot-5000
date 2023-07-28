@@ -3,7 +3,11 @@ const client = config.CLIENT;
 import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ComponentType, ButtonStyle } from "discord.js";
 import Genius from "genius-lyrics";
 import play from "play-dl";
-const platforms = ["Spotify", "SoundCloud", "YouTube"];
+import { path } from "@ffmpeg-installer/ffmpeg";
+import ffmpeg from "fluent-ffmpeg";
+import ytpl from "ytpl";
+ffmpeg.setFfmpegPath(path);
+import { Readable, PassThrough } from "stream";
 import {
 	joinVoiceChannel,
 	createAudioPlayer,
@@ -16,8 +20,18 @@ let player;
 let connection;
 let resource;
 let isPlaying = false;
+let filter = "nofilter";
 let queue = [];
+let timeoutID;
 const itemsPerPage = 15;
+await play.setToken({
+	spotify: {
+		client_id: config.SP_CLIENTID,
+		client_secret: config.SP_CLIENT_SECRET,
+		refresh_token: undefined,
+		market: "DE",
+	},
+});
 
 async function playNextTrack() {
 	const track = queue[0];
@@ -34,7 +48,16 @@ async function playNextTrack() {
 		const handleTrackEnd = async () => {
 			queue.shift();
 			if (queue.length === 0) {
-				connection.destroy();
+				if (connection !== undefined) {
+					interaction.channel.send({
+						content: "The queue has finished, I will automatically disconnect in **5 minutes**",
+					});
+					timeoutID = setTimeout(() => {
+						connection.disconnect();
+					}, 300000);
+					player = undefined;
+					isPlaying = false;
+				}
 				return;
 			}
 
@@ -58,10 +81,9 @@ async function playTrack(track, skip) {
 		const stream = await play.stream(track.url, { quality: 2 });
 		track.audioStream = stream;
 	}
-
 	resource = createAudioResource(track.audioStream.stream, {
 		inputType: track.audioStream.type,
-	});
+	}); //await applyFilter(track.audioStream, interaction);
 
 	player.play(resource);
 
@@ -106,10 +128,11 @@ function formatDuration(videoLengthSeconds) {
 		.padStart(2, "0")}`;
 }
 
-async function addMusic(interaction) {
+async function addMusic(interaction, next) {
+	clearTimeout(timeoutID);
+	timeoutID = undefined;
 	await interaction.deferReply();
 	const { options } = interaction;
-	const platform = options.getString("platform");
 	const url = options.getString("url");
 	const playlist_boolean = options.getBoolean("playlist");
 
@@ -123,10 +146,6 @@ async function addMusic(interaction) {
 		return interaction.editReply(" cannot join or speak in your voice channel.");
 	}
 
-	if (!platforms.includes(platform)) {
-		return interaction.editReply("Invalid platform.");
-	}
-
 	connection = joinVoiceChannel({
 		channelId: interaction.member.voice.channel.id,
 		guildId: interaction.guild.id,
@@ -134,33 +153,38 @@ async function addMusic(interaction) {
 	});
 
 	if (playlist_boolean === true) {
-		addPlaylistToQueue(url, interaction);
+		addPlaylistToQueue(url, interaction, next);
 	} else {
 		try {
-			let yt_info;
+			let info;
 			try {
-				yt_info = await play.video_info(url);
-			} catch {
+				info = await play.video_info(url);
+			} catch (err) {
+				console.log(err);
 				return interaction.editReply("Error fetching music data. Make sure you enter a valid link.");
 			}
-			const videoLengthSeconds = yt_info.video_details.durationInSec;
+			const videoLengthSeconds = info.video_details.durationInSec;
 
 			const formattedDuration = formatDuration(videoLengthSeconds);
 
 			const track = {
-				title: yt_info.video_details.title,
-				thumbnail: yt_info.video_details.thumbnails[0].url,
-				artist: yt_info.video_details.channel.name,
-				url: yt_info.video_details.url,
+				title: info.video_details.title,
+				thumbnail: info.video_details.thumbnails[0].url,
+				artist: info.video_details.channel.name,
+				url: info.video_details.url,
 				duration: formattedDuration,
 				unformattedDuration: videoLengthSeconds,
 				user: interaction.user.username,
 				interaction: interaction,
 				audioStream: null,
 			};
-
-			queue.push(track);
-			interaction.editReply(`Added to the queue: **${track.title}**, by ${track.user}`);
+			if (next) {
+				interaction.editReply(`**${track.title}** has been queued up as the next track, by ${track.user}`);
+				queue.splice(2, 0, track);
+			} else {
+				queue.push(track);
+				interaction.editReply(`**${track.title}** was added to the queue, by ${track.user}`);
+			}
 			if (!isPlaying) {
 				playNextTrack();
 			}
@@ -180,14 +204,14 @@ async function addMusic(interaction) {
 	}
 }
 
-async function addPlaylistToQueue(url, interaction) {
+async function addPlaylistToQueue(url, interaction, next) {
 	try {
 		const playlist = await ytpl(url);
-
+		const pl_array = [];
 		for (const video of playlist.items) {
 			const track = {
 				title: video.title,
-				artist: yt_info.video_details.channel.name,
+				artist: video.author.name,
 				thumbnail: video.bestThumbnail.url,
 				url: video.shortUrl,
 				duration: formatDuration(video.durationSec),
@@ -196,12 +220,18 @@ async function addPlaylistToQueue(url, interaction) {
 				interaction: interaction,
 				audioStream: null,
 			};
-			queue.push(track);
+			pl_array.push(track);
+		}
+		if (next) {
+			queue.splice(2, 0, ...pl_array);
+		} else {
+			queue.concat(pl_array);
 		}
 
 		interaction.editReply(`Added to the queue: **${playlist.title}**, by ${interaction.user.username}`);
 		playNextTrack();
 	} catch (error) {
+		console.log(error);
 		interaction.editReply("Error adding playlist to queue");
 	}
 }
@@ -446,18 +476,19 @@ function unpause(interaction) {
 async function fetchLyrics() {
 	let lyrics = null;
 	try {
-		const modifiedArtist = queue[0].artist.replace(" - Topic", "");
-		const modifiedTitle = queue[0].title
-			.replace(queue[0].artist, "")
-			.replace("(official video)", "")
-			.replace("-", "");
-		const SearchQuery = `${modifiedArtist} ${modifiedTitle}`;
+		const SearchQuery = queue[0].title
+			.replace(
+				/(\(official video\)|Official video| -|\(TECHNO\)|\(HARDSTYLE\)|HARDSTYLE|Techno|\(Remix\)|\(Hardstyle\))/gi,
+				""
+			)
+			.trim();
 		console.log("modified Title:", SearchQuery);
 		const searches = await LyricClient.songs.search(SearchQuery);
 		const firstSong = searches[0];
-		lyrics = await firstSong.lyrics();
-		if (!lyrics) {
+		if (!firstSong) {
 			lyrics = `No lyrics found for ${queue[0].title}.`;
+		} else {
+			lyrics = await firstSong.lyrics();
 		}
 	} catch (error) {
 		console.log(error);
@@ -501,7 +532,81 @@ async function lyrics(interaction) {
 	interaction.editReply({ embeds: Embeds });
 }
 
-function filter(interaction) {}
+function filterHandler(interaction) {
+	const filter_option = interaction.options.getString("filter");
+	if (filter_option === filter) {
+		return interaction.reply({ content: "The filter you wanted to select is already active" });
+	}
+	if (filter_option === "nightcore") {
+		interaction.reply({ content: "Successfully set the filter to `NightCore`" });
+		filter = "nightcore";
+	}
+	if (filter_option === "hardtekk") {
+		interaction.reply({ content: "Successfully set the filter to `Nightcore`" });
+		filter = "hardtekk";
+	}
+	if (filter_option === "nofilter") {
+		interaction.reply({ content: "Successfully reset current filter, no filters are now active" });
+		filter = "nofilter";
+	}
+}
+
+async function applyFilter(audio, interaction) {
+	const type = audio.type;
+	const stream = audio.stream;
+	const filterSettings = ["asetrate=44100*1.25,aresample=44100,atempo=1.25"];
+	try {
+		if (filter === "nightcore") {
+			const readableStream = Readable.from(stream._readableState.buffer);
+			console.log(readableStream);
+			const ffmpegCommand = ffmpeg().input(readableStream);
+			ffmpegCommand.audioFilter(filterSettings[0]);
+			ffmpegCommand.toFormat("mp3");
+			ffmpegCommand.on("error", (err, stdout, stderr) => {
+				console.error("ffmpeg error:", err.message);
+				console.error("ffmpeg stdout:", stdout);
+				console.error("ffmpeg stderr:", stderr);
+			});
+			const modifiedAudioStream = ffmpegCommand.pipe({
+				stream: true,
+				end: true,
+			});
+			const modifiedAudioStream_readable = Readable.from(modifiedAudioStream);
+			console.log("MODIFIED AUDIO STREAM", modifiedAudioStream_readable);
+
+			return createAudioResource(modifiedAudioStream_readable, {
+				inputType: type,
+			});
+		} else {
+			return createAudioResource(stream, {
+				inputType: type,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		interaction.channel.send({ content: `Could not apply \`${filter}\`` });
+		return createAudioResource(stream, {
+			inputType: type,
+		});
+	}
+}
+
+function controls(interaction) {
+	const shuffleButton = new ButtonBuilder().setStyle(ButtonStyle.Primary).setEmoji("🔀").setCustomId("4");
+	const pauseButton = new ButtonBuilder().setEmoji("⏸️").setStyle(ButtonStyle.Primary).setCustomId("2");
+	const playButton = new ButtonBuilder().setEmoji("▶️").setStyle(ButtonStyle.Primary).setCustomId("3");
+	const nextButton = new ButtonBuilder().setEmoji("⏭️").setStyle(ButtonStyle.Primary).setCustomId("1");
+	const buttonRow = new ActionRowBuilder().addComponents(pauseButton, playButton, nextButton, shuffleButton);
+	const botAvatar = client.user.avatarURL();
+	const Embed = new EmbedBuilder()
+		.setColor(0xffcc00)
+		.setAuthor({ name: "MetalFistBot 5000 | Music controls", iconURL: botAvatar })
+		.setTitle("Controls")
+		.setTimestamp(interaction.createdTimestamp)
+		.setFooter({ text: `Requested by ${interaction.user.username}` });
+
+	const reply = interaction.reply({ embeds: [Embed], components: [buttonRow] });
+}
 
 export default {
 	addMusic,
@@ -513,7 +618,7 @@ export default {
 	nowplaying,
 	showqueue,
 	shuffle,
-	filter,
-	lyrics, /*seek*/
-	
+	filterHandler,
+	controls,
+	lyrics /*seek*/,
 };
