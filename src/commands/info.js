@@ -52,7 +52,7 @@ function botinfo(interaction) {
 		.setThumbnail(botAvatar)
 		.addFields(
 			{ name: "Name", value: "MetalFistBot 5000", inline: true },
-			{ name: "Version", value: "1.4.0", inline: true },
+			{ name: "Version", value: "1.4.1", inline: true },
 			{
 				name: "Developer",
 				value: "schleimfresse \n [GitHub](https://github.com/Schleimfresse/MetalFistBot-5000)",

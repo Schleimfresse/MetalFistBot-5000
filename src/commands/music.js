@@ -24,14 +24,31 @@ let filter = "nofilter";
 let queue = [];
 let timeoutID;
 const itemsPerPage = 15;
-await play.setToken({
+
+async function getAccessToken() {
+	const url = "https://accounts.spotify.com/api/token";
+	const auth = Buffer.from(`${config.SP_CLIENTID}:${config.SP_CLIENT_SECRET}`).toString("base64");
+	const requestBody = new URLSearchParams();
+	requestBody.append("grant_type", "client_credentials");
+	const response = await fetch(url, {
+		method: "POST",
+		headers: {
+			Authorization: `Basic ${auth}`,
+		},
+		body: requestBody,
+	});
+	const data = await response.json();
+	return data.access_token;
+}
+const accessToken = await getAccessToken();
+/*await play.setToken({
 	spotify: {
 		client_id: config.SP_CLIENTID,
 		client_secret: config.SP_CLIENT_SECRET,
 		refresh_token: undefined,
 		market: "DE",
 	},
-});
+});*/
 
 async function playNextTrack() {
 	const track = queue[0];
@@ -134,6 +151,7 @@ async function addMusic(interaction, next) {
 	await interaction.deferReply();
 	const { options } = interaction;
 	const url = options.getString("url");
+	const platform = options.getString("platform");
 	const playlist_boolean = options.getBoolean("playlist");
 
 	const channel = interaction.member.voice.channel;
@@ -158,7 +176,38 @@ async function addMusic(interaction, next) {
 		try {
 			let info;
 			try {
-				info = await play.video_info(url);
+				if (platform == "yt") {
+					info = await play.video_info(url);
+				}
+				if (platform == "sp") {
+					if (playlist_boolean === true) {
+						return interaction.editReply(
+							"This is not supported at the moment!"
+						);
+					}
+					console.log(config.SP_CLIENT_SECRET);
+					const res = await fetch(`https://api.spotify.com/v1/tracks/39QPkdRbgK5YUcSHWTkkbQ?market=DE`, {
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+						},
+					});
+					if (!res.ok) {
+						throw new Error(`Failed to fetch data from Spotify API. Status: ${res.status}`);
+					}
+
+					const data = await res.json();
+
+					try {
+						let searched = await play.search(`${data.name}`, {
+							limit: 1,
+						});
+						info = await play.video_info(searched[0].url);
+					} catch {
+						return interaction.editReply(
+							"Error fetching music data, the requested Spotify track could not be found on YouTube"
+						);
+					}
+				}
 			} catch (err) {
 				console.log(err);
 				return interaction.editReply("Error fetching music data. Make sure you enter a valid link.");
@@ -225,7 +274,13 @@ async function addPlaylistToQueue(url, interaction, next) {
 		if (next) {
 			queue.splice(2, 0, ...pl_array);
 		} else {
-			queue.concat(pl_array);
+			if (queue.length === 0) {
+				console.log(queue);
+				queue = pl_array;
+			} else {
+				queue.concat(pl_array);
+			}
+			console.log(queue);
 		}
 
 		interaction.editReply(`Added to the queue: **${playlist.title}**, by ${interaction.user.username}`);

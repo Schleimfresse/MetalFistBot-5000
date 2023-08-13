@@ -158,8 +158,8 @@ const commands = [
 				description: "In how many minutes you should be reminded, e.g. if you enter 5, you will be reminded in 5 minutes",
 				type: 4,
 				required: true,
-			}
-		]
+			},
+		],
 	},
 	{
 		name: "nowplaying",
@@ -179,7 +179,7 @@ const commands = [
 		options: [
 			{
 				name: "user",
-				description: 'The user of who the avatar is to be shown',
+				description: "The user of who the avatar is to be shown",
 				type: 6,
 				required: true,
 			},
@@ -235,8 +235,19 @@ const commands = [
 		description: "Add a song to the queue. Only YouTube is supported",
 		options: [
 			{
+				
+				name: "platform",
+				description: "The music platform",
+				type: 3,
+				required: true,
+				choices: [
+					{ name: "YouTube", value: "yt" },
+					{ name: "Spotify", value: "sp" },
+				]
+			},
+			{
 				name: "url",
-				description: "The music link to add.",
+				description: "The music link to add",
 				type: 3,
 				required: true,
 			},
@@ -281,7 +292,6 @@ const commands = [
 					{ name: "lesbian", value: "lesbian" },
 					{ name: "anal", value: "anal" },
 					{ name: "boobs", value: "boobs" },
-
 				],
 			},
 		],
@@ -292,14 +302,12 @@ const commands = [
 	},
 ];
 
-const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
+const rest = new REST({ version: "10" }).setToken(config.TOKEN);
 
 (async () => {
 	try {
 		console.log("Started refreshing application (/) commands.");
-
 		await rest.put(Routes.applicationCommands(config.CLIENT_ID), { body: commands });
-
 		console.log("Successfully reloaded application (/) commands.");
 	} catch (error) {
 		console.error(error);

@@ -3,7 +3,6 @@ const { ActivityType } = Discord;
 import commands from "./commands/index.js";
 import config from "./config/config.js";
 const client = config.CLIENT;
-
 client.on("ready", () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 	client.user.setPresence({
