@@ -30,15 +30,19 @@ async function getAccessToken() {
 	const auth = Buffer.from(`${config.SP_CLIENTID}:${config.SP_CLIENT_SECRET}`).toString("base64");
 	const requestBody = new URLSearchParams();
 	requestBody.append("grant_type", "client_credentials");
-	const response = await fetch(url, {
-		method: "POST",
-		headers: {
-			Authorization: `Basic ${auth}`,
-		},
-		body: requestBody,
-	});
-	const data = await response.json();
-	return data.access_token;
+	try {
+		const response = await fetch(url, {
+			method: "POST",
+			headers: {
+				Authorization: `Basic ${auth}`,
+			},
+			body: requestBody,
+		});
+		const data = await response.json();
+		return data.access_token;
+	} catch (err) {
+		console.log("Spotify authentication token: " + err);
+	}
 }
 const accessToken = await getAccessToken();
 /*await play.setToken({
@@ -181,9 +185,7 @@ async function addMusic(interaction, next) {
 				}
 				if (platform == "sp") {
 					if (playlist_boolean === true) {
-						return interaction.editReply(
-							"This is not supported at the moment!"
-						);
+						return interaction.editReply("This is not supported at the moment!");
 					}
 					console.log(config.SP_CLIENT_SECRET);
 					const res = await fetch(`https://api.spotify.com/v1/tracks/39QPkdRbgK5YUcSHWTkkbQ?market=DE`, {
@@ -229,7 +231,7 @@ async function addMusic(interaction, next) {
 			};
 			if (next) {
 				interaction.editReply(`**${track.title}** has been queued up as the next track, by ${track.user}`);
-				queue.splice(2, 0, track);
+				queue.splice(1, 0, track);
 			} else {
 				queue.push(track);
 				interaction.editReply(`**${track.title}** was added to the queue, by ${track.user}`);

@@ -1,7 +1,7 @@
 import champions from "../data/champions.js";
 import fetch from "node-fetch";
 import config from "../config/config.js";
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder} from "discord.js";
 const client = config.CLIENT;
 const API_KEY = config.API_KEY;
 
@@ -48,7 +48,8 @@ async function getMasteryPoints(interaction) {
 		const data = await response.json();
 		if (data.status?.status_code === 404)
 			return interaction.editReply(`Summoner **${summoner}** has never played the champion **${champ}**`);
-		const MasteryPoints = data.championPoints;1
+		const MasteryPoints = data.championPoints;
+		1;
 		const formattedMasteryPoints = MasteryPoints.toLocaleString("en-US");
 		const formatedRegion = region.toLowerCase().replace(/\d+/g, "");
 		const formatedSummonerName = summoner.replace(/ /g, "+");
@@ -105,4 +106,78 @@ async function getTotalMasteryPoints(interaction) {
 	}
 }
 
-export default { getMasteryPoints, getTotalMasteryPoints };
+const getToken = async (client_id) => {
+	const client_secret = config.TWITCH_CLIENT_SECRET;
+	const response = await fetch("https://id.twitch.tv/oauth2/token", {
+		method: "POST",
+		body: new URLSearchParams({
+			client_id: client_id,
+			client_secret: client_secret,
+			grant_type: "client_credentials",
+		}),
+		headers: {
+			"Content-Type": "application/x-www-form-urlencoded",
+		},
+	});
+
+	const data = await response.json();
+	return data.access_token;
+};
+
+const convertThumbnailUrl = (url, width, height) => {
+	return url.replace("{width}", width).replace("{height}", height);
+};
+
+async function lolstreams(interaction) {
+	await interaction.deferReply();
+	const client_id = config.TWITCH_CLIENT_ID;
+	const access_token = await getToken(client_id);
+	console.log(access_token);
+	const url = `https://api.twitch.tv/helix/streams?game_id=21779&first=10`;
+	const response = await fetch(url, {
+		method: "GET",
+		headers: {
+			"Client-ID": client_id,
+			Authorization: `Bearer ${access_token}`,
+		},
+	});
+	const data_raw = await response.json();
+	const data = data_raw.data;
+	const botAvatar = client.user.displayAvatarURL();
+	let embed_array = [];
+	for (let i = 0; i < data.length; i++) {
+		const Embed = new EmbedBuilder();
+		Embed.setColor(0xffcc00);
+		if (i === 0) {
+			Embed.setAuthor({ name: "MetalFistBot 5000 | Streams", iconURL: botAvatar });
+		}
+		if (i === data.length - 1) {
+			Embed.setTimestamp(interaction.createdAt);
+			Embed.setFooter({ text: `Requested by ${interaction.user.username}` });
+		}
+		if (data[i].language === "en") {
+			data[i].language = "gb";
+		}
+		if (data[i].language === "ko") {
+			data[i].language = "kr";
+		}
+		if (data[i].language === "ja") {
+			data[i].language = "jp";
+		}
+		if (data[i].language === "zh") {
+			data[i].language = "cn";
+		}
+
+		const thumbnailWidth = 300;
+		const thumbnailHeight = 160;
+		const thumbnail = convertThumbnailUrl(data[i].thumbnail_url, thumbnailWidth, thumbnailHeight);
+		Embed.setTitle(`${data[i].user_name} (:flag_${data[i].language}:)`);
+		Embed.setURL(`https://twitch.tv/${data[i].user_login}`);
+		Embed.setDescription(`Viewer: ${data[i].viewer_count}\n`);
+		Embed.setImage(thumbnail);
+		embed_array = [...embed_array, Embed];
+	}
+	interaction.editReply({ embeds: embed_array });
+}
+
+export default { getMasteryPoints, getTotalMasteryPoints, lolstreams };

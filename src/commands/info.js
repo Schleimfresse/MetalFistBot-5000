@@ -11,11 +11,16 @@ function help(interaction) {
 		.setThumbnail(botAvatar)
 		.addFields({
 			name: "🎶 Music",
-			value: "`/play`, `/shuffle`, `/leave`, `/stop`, `/pause`, `/unpause`, `/resume`, `/nowplaying`, `/skip`, `/queue`, `/seek`, `/jumb`, `/lyrics`, `/filter`",
+			value:
+				"`/play`, `/shuffle`, `/leave`, `/stop`, `/pause`, `/unpause`, `/resume`, `/nowplaying`, `/skip`, `/queue`, `/seek`, `/jumb`, `/lyrics`" /* `, /filter`"*/,
 		})
-		.addFields({ name: "💫 Various", value: "`/serverinfo`, `/userinfo`, `/clear`, `/remindme`, `/coinflip`, `/fact`, `/clear-dms`" })
+		.addFields({
+			name: "💫 Various",
+			value: "`/serverinfo`, `/userinfo`, `/clear`, `/remindme`, `/coinflip`, `/fact`" /*, `/clear-dms`"*/,
+		})
 		.addFields({ name: "ℹ️ Info", value: "`/help`, `/ping`, `/botinfo`" })
-		.addFields({ name: "🕹 Games", value: "`/masterypoints`, `/totalmasterypoints`" })
+		.addFields({ name: "➗ Math", value: "`/mandelbrotmenge`" })
+		.addFields({ name: "🕹 Games", value: "`/masterypoints`, `/totalmasterypoints`, `/streams`" })
 		.addFields({ name: "❤️ Nsfw", value: "`/nsfw`, `options: nude, hentai, lesbian, anal, boobs`" })
 		.setTimestamp(interaction.createdAt)
 		.setFooter({ text: `Requested by ${interaction.user.username}` });
@@ -52,7 +57,7 @@ function botinfo(interaction) {
 		.setThumbnail(botAvatar)
 		.addFields(
 			{ name: "Name", value: "MetalFistBot 5000", inline: true },
-			{ name: "Version", value: "1.4.1", inline: true },
+			{ name: "Version", value: "1.4.2", inline: true },
 			{
 				name: "Developer",
 				value: "schleimfresse \n [GitHub](https://github.com/Schleimfresse/MetalFistBot-5000)",

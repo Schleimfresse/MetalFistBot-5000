@@ -131,8 +131,18 @@ client.on("interactionCreate", async (interaction) => {
 		commands.lol.getTotalMasteryPoints(interaction);
 	}
 
+	if (commandName === "streams") {
+		commands.lol.streams(interaction);
+	}
+
 	if (commandName === "nsfw") {
 		commands.nsfw.nsfw(interaction);
+	}
+	if (commandName === "mandelbrot") {
+		commands.math.mandelbrot(interaction);
+	}
+	if (commandName === "function") {
+		commands.math.function(interaction)
 	}
 });
 

@@ -2,7 +2,8 @@ import music from "./music.js";
 import info from "./info.js";
 import misc from "./misc.js";
 import leagueoflegends from "./leagueoflegends.js";
-import nsfw from "./nsfw.js"
+import nsfw from "./nsfw.js";
+import math from "./math.js";
 let commands = {};
 
 commands.music = {
@@ -37,9 +38,14 @@ commands.misc = {
 commands.lol = {
 	getMasteryPoints: leagueoflegends.getMasteryPoints,
 	getTotalMasteryPoints: leagueoflegends.getTotalMasteryPoints,
+	streams: leagueoflegends.lolstreams,
 };
 commands.nsfw = {
-	nsfw: nsfw.nsfw
+	nsfw: nsfw.nsfw,
+};
+commands.math = {
+	mandelbrot: math.mandelbrot,
+	function: math.functions,
 }
 
 export default commands;

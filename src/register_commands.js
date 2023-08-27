@@ -155,7 +155,8 @@ const commands = [
 		options: [
 			{
 				name: "in",
-				description: "In how many minutes you should be reminded, e.g. if you enter 5, you will be reminded in 5 minutes",
+				description:
+					"In how many minutes you should be reminded, e.g. if you enter 5, you will be reminded in 5 minutes",
 				type: 4,
 				required: true,
 			},
@@ -232,10 +233,9 @@ const commands = [
 	},
 	{
 		name: "play",
-		description: "Add a song to the queue. Only YouTube is supported",
+		description: "Add a song to the queue",
 		options: [
 			{
-				
 				name: "platform",
 				description: "The music platform",
 				type: 3,
@@ -243,7 +243,7 @@ const commands = [
 				choices: [
 					{ name: "YouTube", value: "yt" },
 					{ name: "Spotify", value: "sp" },
-				]
+				],
 			},
 			{
 				name: "url",
@@ -263,6 +263,16 @@ const commands = [
 		name: "play-next",
 		description: "Adds a song to the queue and plays it after the currently playing song",
 		options: [
+			{
+				name: "platform",
+				description: "The music platform",
+				type: 3,
+				required: true,
+				choices: [
+					{ name: "YouTube", value: "yt" },
+					{ name: "Spotify", value: "sp" },
+				],
+			},
 			{
 				name: "url",
 				description: "The link of the audio recource",
@@ -299,6 +309,40 @@ const commands = [
 	{
 		name: "clear-dms",
 		description: "Delete the direct messages (DMs) that the bot has sent you",
+	},
+	{
+		name: "streams",
+		description: "Shows you the current top online League of legends streamers",
+	},
+	{
+		name: "mandelbrot",
+		description: "render an image of the mandelbrot set",
+		options: [
+			{
+				name: "iterations",
+				description: "Specify how many iterations should be made, default is 1000",
+				type: 10,
+				required: false,
+			},
+			{
+				name: "zoom",
+				description: "Specify how close to the Mandelbrot set to zoom in, default is 500",
+				type: 10,
+				required: false,
+			},
+		],
+	},
+	{
+		name: "function",
+		description: "render an image of the given function",
+		options: [
+			{
+				name: "input",
+				description: "Specify an arbitrary function",
+				type: 3,
+				required: false,
+			},
+		],
 	},
 ];
 
